@@ -5,9 +5,8 @@ clc
 %% Load in Mesh
 
 % Change to mesh folder
-%cd('C:\Users\BLI\Desktop\BLI_ProbePathRender\JMonkeyEngine\JMEApplication_LiveProbeTracking\input');
+cd('C:\Users\BLI\Desktop\BLI_ProbePathRender\JMonkeyEngine\JMEApplication_LiveProbeTracking\input');
 
-cd('C:\Users\Kyle\Documents\GitHub\BLI_ProbePathRender\JMonkeyEngine\JMEApplication_LiveProbeTracking\input');
 % Read in OBJ model
 [vertices,faces] = read_vertices_and_faces_from_obj_file('meshDefinition_mesh1.obj');
 
@@ -22,8 +21,8 @@ verticesFinal(:,2) = vertices2(:,2) - oldCenter(2);
 verticesFinal(:,3) = vertices2(:,3) - oldCenter(3);
 
 % Load in Fixed Data points
- calibPoints = importdata('fixedPoints_meshTest.txt');
-%calibPoints = importdata('fixedPoints_meshTest2.txt');
+calibPoints = importdata('fixedPoints_meshTest.txt');
+% calibPoints = importdata('fixedPoints_meshTest2.txt');
 
 % Average Points Locations for Fixed Points
 for i = 1:length(calibPoints)/4
@@ -78,8 +77,7 @@ axis equal
 %% Load Optical Data
 
 % Change to Optical Data Path
-%cd('C:\Users\BLI\Desktop\Downloads\LowResCalfplots')
-cd('C:\Users\Public\BLI\Desktop\Downloads\LowResCalfplots')
+cd('C:\Users\BLI\Desktop\Downloads\LowResCalfplots')
 
 % Load in measurement times
 fid2=fopen('ptwarm_160628_calf2__TIME.asc');

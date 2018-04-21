@@ -1,16 +1,17 @@
 % Calf Data Visualization (Preselected points)
-clear
-clc
+% clear
+% clc
 
 %% Load in Mesh
 
 % Change to mesh folder
-% cd('C:\Users\BLI\Desktop\BLI_ProbePathRender\JMonkeyEngine\JMEApplication_LiveProbeTracking\input');
+% cd('C:\Users\fdpm\Downloads\BLI_ProbePathRender-master\BLI_ProbePathRender-master\JMonkeyEngine\JMEApplication_LiveProbeTracking\input');
 cd('C:\Users\fdpm\Downloads\BLI_ProbePathRender-master\BLI_ProbePathRender-master\JMonkeyEngine\JMEApplication_LiveProbeTracking\input');
-
 % Read in OBJ model
-[vertices,faces] = read_vertices_and_faces_from_obj_file('textured_mesh_resampled.obj');
+% [vertices,faces] = read_vertices_and_faces_from_obj_file('meshDefinition_mesh1.obj');
+[vertices,faces] = read_vertices_and_faces_from_obj_file('highsampled.obj');
 
+%%
 % Translate and Offset Mesh
 meshScale = 80;
 vertices2 = vertices*meshScale;
@@ -36,21 +37,18 @@ end
 fixedDataLocations = calibPointsFinal;
 % Reorder fixed locations
 tempMat = zeros(length(fixedDataLocations),3);
-for i = 1:15
-    tempMat(i,:) = fixedDataLocations((11*i)-10,:);
-    tempMat(15+i,:) = fixedDataLocations((11*i)-9,:);
-    tempMat(30+i,:) = fixedDataLocations((11*i)-8,:);
-    tempMat(45+i,:) = fixedDataLocations((11*i)-7,:);
-    tempMat(60+i,:) = fixedDataLocations((11*i)-6,:);
-    tempMat(75+i,:) = fixedDataLocations((11*i)-5,:);
-    tempMat(90+i,:) = fixedDataLocations((11*i)-4,:);
-    tempMat(105+i,:) = fixedDataLocations((11*i)-3,:);
-    tempMat(120+i,:) = fixedDataLocations((11*i)-2,:);
-    tempMat(135+i,:) = fixedDataLocations((11*i)-1,:);
-    tempMat(150+i,:) = fixedDataLocations((11*i),:);
+for i = 1:8
+    tempMat(i,:) = fixedDataLocations((6*i)-5,:);
+    tempMat(8+i,:) = fixedDataLocations((6*i)-4,:);
+    tempMat(16+i,:) = fixedDataLocations((6*i)-3,:);
+    tempMat(24+i,:) = fixedDataLocations((6*i)-2,:);
+    tempMat(32+i,:) = fixedDataLocations((6*i)-1,:);
+    tempMat(40+i,:) = fixedDataLocations((6*i)-0,:);
+
 end
 
-fixedDataLocations = tempMat(1:165,:);
+fixedDataLocations = tempMat;
+scatter3(tempMat(:,1),tempMat(:,2),tempMat(:,3));
 
 % for i = 1:8
 %     tempMat(i,:) = fixedDataLocations((6*i)-5,:);
@@ -70,34 +68,28 @@ for i = 1:length(calibPoints)/4
     calibPointsFinal(i,3) = mean(calibPoints(range,3));
 end
 
-% % Display Fixed Points and 3D Mesh
-% close all
-% hold on
-% trimesh(faces,verticesFinal(:,1),verticesFinal(:,2),verticesFinal(:,3))
-% scatter3(fixedDataLocations(:,1),fixedDataLocations(:,2),fixedDataLocations(:,3),'filled','k');
-% scatter3(calibPointsFinal(:,1),calibPointsFinal(:,2),calibPointsFinal(:,3),'filled','r');
-% axis equal
+% Display Fixed Points and 3D Mesh
+close all
+hold on
+trimesh(faces,verticesFinal(:,1),verticesFinal(:,2),verticesFinal(:,3))
+scatter3(fixedDataLocations(:,1),fixedDataLocations(:,2),fixedDataLocations(:,3),'filled','k');
+scatter3(calibPointsFinal(:,1),calibPointsFinal(:,2),calibPointsFinal(:,3),'filled','r');
+axis equal
 
 %% Load Optical Data
 
 % Change to Optical Data Path
 % cd('C:\Users\BLI\Desktop\Downloads\LowResCalfplots')
-% cd('C:\Users\BLI\Desktop\Downloads\HighResCalfplots')
-cd('C:\Users\fdpm\Downloads\HighResCalfplots\HighResCalfplots')
-
+cd('C:\Users\fdpm\Downloads\LowResCalfplots\LowResCalfplots')
 % Load in measurement times
-% fid2=fopen('ptwarm_160628_calf2__TIME.asc');
-fid2=fopen('ptwarm_160629_calf1__TIME.asc');
-
+fid2=fopen('ptwarm_160628_calf2__TIME.asc');
 opticalTimes=textscan(fid2,'%s %s');
 fclose('all');
 % Sort measurements by time
 [a,b]=sort(opticalTimes{2}(2:end));
 
 % Load in optical chromophore measurements
-% fid = fopen('ptwarm_160628_calf2__SUM.asc');
-fid = fopen('ptwarm_160629_calf1__SUM.asc');
-
+fid = fopen('ptwarm_160628_calf2__SUM.asc');
 opticalStringData = textscan(fid, '%s');
 fclose('all');
 % Scan each line looking for keywords
@@ -111,7 +103,7 @@ endIndex = find(ind2==1,1);
 % Find number of points based on keywords
 numPoints = endIndex-startIndex;
 chromIndex = find(ind3==1);
-chromIndex = chromIndex(1); % Switch to 1 for FDPM only
+chromIndex = chromIndex(2); % Switch to 1 for FDPM only
 count=1;
 
 % Change order of loaded data to match timing
@@ -128,6 +120,12 @@ for i = b(j)
 end
 end
 
+
+%%
+datafile = 'AV-v1-L.xls';
+cd('C:\Users\fdpm\Downloads\AV_calf_data');
+rawChromMat = xlsread(datafile)
+chromMat = rawChromMat(:,2:9);
 %%  Select Region for Interpolation
 %{
 xmin = min(calibPointsFinal(:,1));
@@ -160,11 +158,11 @@ for i = 1:length(fixedDataLocations)
     distance(:,2) = (verticesFinal(:,2)-fixedDataLocations(i,2)).^2;
     distance(:,3) = (verticesFinal(:,3)-fixedDataLocations(i,3)).^2;
     distance = sqrt(distance(:,1)+distance(:,2)+distance(:,3));          
-    [temp1,temp2] = find(distance < 1.25);
+    [temp1,temp2] = find(distance < 1.6);
     interpRange(temp1) = 1  ;  
 end
 interpRange = logical(interpRange);
-% scatter3(verticesFinal(interpRange,1),verticesFinal(interpRange,2),verticesFinal(interpRange,3))
+scatter3(verticesFinal(interpRange,1),verticesFinal(interpRange,2),verticesFinal(interpRange,3))
 
 % close all
 % hold on
@@ -174,25 +172,29 @@ interpRange = logical(interpRange);
 % scatter3(verticesFinal(interpRange,1),verticesFinal(interpRange,2),verticesFinal(interpRange,3),'filled','b')
 % axis equal
 
+save('visualization.mat')
 %%
+close all
 % Interpolate Data
-chromophoreSelect = 4; % 1 Oxyhemo 2 Deoxyhemo 3 Water 4 Lipid
+chromophoreSelect = 7; % 1 Oxyhemo 2 Deoxyhemo 3 Water 4 Lipid
 V = chromMat(1:length(fixedDataLocations),chromophoreSelect);
-VF = scatteredInterpolant(fixedDataLocations(:,1),fixedDataLocations(:,2),fixedDataLocations(:,3),V,'natural');
+VF = scatteredInterpolant(fixedDataLocations(:,1),fixedDataLocations(:,2),fixedDataLocations(:,3),V,'linear');
 VFx = VF(verticesFinal(interpRange,1),verticesFinal(interpRange,2),verticesFinal(interpRange,3));
 
-scale =3;
+scale =.5;
 
 figure('units','normalized','outerposition',[0 0 .5 1])
 hold on
 h = trisurf(faces,verticesFinal(:,1),verticesFinal(:,2),verticesFinal(:,3));
 set(h,'FaceColor',[255/255,224/255,189/255])
-set(h,'EdgeAlpha',.2);
+set(h,'EdgeAlpha',0.05);
 scatter3(verticesFinal(interpRange,1),verticesFinal(interpRange,2),verticesFinal(interpRange,3),100*scale,VFx,'s','filled')
 % scatter3(fixedDataLocations(:,1),fixedDataLocations(:,2),fixedDataLocations(:,3),100*scale,V,'filled')
-scatter3(calibPointsFinal(:,1),calibPointsFinal(:,2),calibPointsFinal(:,3),200*scale,'filled','^k')
+% scatter3(calibPointsFinal(:,1)+.2,calibPointsFinal(:,2),calibPointsFinal(:,3),200*scale,'filled','k')
 
-colormap('jet');
+colormap('jet')
+colormap('hot');
+% colormap('bone');
 axis equal
 colorbar
 
@@ -203,13 +205,28 @@ switch chromophoreSelect
         caxis([10 95]) % oxy
     case 3
         caxis([25 100]) % water
+        caxis([0 50])
     case 4
         caxis([32 75]) % lipid
+    case 5
+        caxis([0 120])
+    case 7
+        caxis([0 1])
 end
 
 axis off
-
+ title('AV-v1-L Water')
  campos([6.0868 -185.2579 -229.5211])
- zoom(1.5)
-
+%  zoom(1.5)
  
+campos([ -101.3027 -185.0767 -164.1013])
+camroll(24)
+zoom(1.5)
+
+handle=title('AV-v1-L THI');
+set(handle,'Position',[-5,-25,0]);
+
+
+
+
+
