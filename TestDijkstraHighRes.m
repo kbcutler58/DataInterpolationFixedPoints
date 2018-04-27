@@ -70,7 +70,6 @@ for i = 1:length(calibPoints)/4
     calibPointsFinal(i,3) = mean(calibPoints(range,3));
 end
 
-
 % Display Fixed Points and 3D Mesh
 close all
 hold on
@@ -161,14 +160,13 @@ differenceVertex3 = (verticesFinal(:,3) - Test_Points_cursor_info(1,2).Position(
 %% Calculate path using dijkstra's algorithm
 [costs,path1] = dijkstra(adjacencyMatrix,verticesFinal,startIndex,endIndex);
 
-
 %gplot(adjacencyMatrix,verticesFinal,'k.:'); hold on;
 %plot(verticesFinal(path1,1),verticesFinal(path,2),'ro-','LineWidth',2); hold off
 
 close all
 % Interpolate Data at all interpolated points
 
-chromophoreSelect = 3; % 1 Oxyhemo 2 Deoxyhemo 3 Water 4 Lipid
+% chromophoreSelect = 3; % 1 Oxyhemo 2 Deoxyhemo 3 Water 4 Lipid
 
 for chromophoreSelect = 1:4
 V = chromMat(1:length(fixedDataLocations),chromophoreSelect);
@@ -199,13 +197,17 @@ colorbar
 
 switch chromophoreSelect
     case 2
+        title('HighResDeOxy')
         caxis([7.847, 22.271]) % deoxy
     case 1
+        title('HighResOxy')
         caxis([10 95]) % oxy
     case 3
+         title('HighResWater')
         caxis([25 100]) % water
 %         caxis([0 50])
     case 4
+        title('HighResLipid')
         caxis([32 75]) % lipid
     case 5
         caxis([0 120])
@@ -214,15 +216,12 @@ switch chromophoreSelect
 end
 
 axis off
- title('AV-v1-L Water')
  campos([6.0868 -185.2579 -229.5211])
-%  zoom(1.5)
- 
 campos([ -101.3027 -185.0767 -164.1013])
 camroll(24)
 zoom(1.5)
 
-%%
+%% Path Plots
 figure
 
 plot(verticesFinal(path1(:)),VFx2,'*');
