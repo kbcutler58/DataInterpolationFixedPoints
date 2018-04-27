@@ -6,7 +6,7 @@ clc
 %% Add dependent functions to path
 currentFolder = pwd;
 addpath(currentFolder);
-addpath(strcat(currentFolder,'\toolbox_subset');
+addpath(strcat(currentFolder,'\toolbox_subset'));
 addpath(strcat(currentFolder,'\dijkstra'));
 
 %% Load Mesh
@@ -14,7 +14,7 @@ addpath(strcat(currentFolder,'\Meshes'));
 [vertices,faces] = read_vertices_and_faces_from_obj_file('calfMesh_highres.obj');
 
 %% Load Optical Data Locations
-addpath(strcat(currentFolder,'\DataPoints'));
+addpath(strcat(currentFolder,'\DataPoints\HighRes'));
 
 % Translate and Offset Mesh
 meshScale = 80;
@@ -80,7 +80,7 @@ scatter3(calibPointsFinal(:,1),calibPointsFinal(:,2),calibPointsFinal(:,3),'fill
 axis equal
 
 %% Load Test Path Points if available
-addpath(strcat(currentFolder,'\Meshes'));
+addpath(strcat(currentFolder,'\TestPathPoints'));
 load('Head2Head.mat');
 %% Load Optical Data
 
@@ -160,6 +160,7 @@ differenceVertex3 = (verticesFinal(:,3) - Test_Points_cursor_info(1,2).Position(
 
 %% Calculate path using dijkstra's algorithm
 [costs,path1] = dijkstra(adjacencyMatrix,verticesFinal,startIndex,endIndex);
+
 
 %gplot(adjacencyMatrix,verticesFinal,'k.:'); hold on;
 %plot(verticesFinal(path1,1),verticesFinal(path,2),'ro-','LineWidth',2); hold off
