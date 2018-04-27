@@ -1,16 +1,21 @@
+
+%% Clear all variables
 clear
 clc
-%%
 
-% djikstra algorithm tracking points
-cd('C:\Users\Kyle\Downloads');
-% [vertices,faces] = read_vertices_and_faces_from_obj_file('textured_mesh_resampled.obj');
+%% Add dependent functions to path
+currentFolder = pwd;
+addpath(currentFolder);
+addpath(strcat(currentFolder,'\toolbox_subset');
+addpath(strcat(currentFolder,'\dijkstra'));
+
+%% Load Mesh
+addpath(strcat(currentFolder,'\Meshes'));
 [vertices,faces] = read_vertices_and_faces_from_obj_file('calfMesh_highres.obj');
-% load('TestPoints.mat')
-% load('Head2Head.mat');
-%%
-cd('C:\Users\Kyle\Documents\GitHub\BLI_ProbePathRender\JMonkeyEngine\JMEApplication_LiveProbeTracking\input');
-load('Head2Head.mat');
+
+%% Load Optical Data Locations
+addpath(strcat(currentFolder,'\DataPoints'));
+
 % Translate and Offset Mesh
 meshScale = 80;
 vertices2 = vertices*meshScale;
@@ -22,7 +27,7 @@ verticesFinal(:,2) = vertices2(:,2) - oldCenter(2);
 verticesFinal(:,3) = vertices2(:,3) - oldCenter(3);
 
 % Load in Fixed Data points
-% calibPoints = importdata('fixedPoints_meshTest.txt');
+% High Res Data Locations
 calibPoints = importdata('fixedPoints_meshTest3.txt');
 
 % Average Points Locations for Fixed Points
@@ -52,14 +57,9 @@ end
 
 fixedDataLocations = tempMat(1:165,:);
 
-% for i = 1:8
-%     tempMat(i,:) = fixedDataLocations((6*i)-5,:);
-% end
-
-
 clear calibPointsFinal calibPoints;
-%%
-% Load in Calibration Points
+%% Load in Calibration Points
+addpath(strcat(currentFolder,'\CalibrationPoints'));
 calibPoints = importdata('fixedPoints_mesh1.txt');
 
 % Average Points Locations for Fixed Points
@@ -70,40 +70,37 @@ for i = 1:length(calibPoints)/4
     calibPointsFinal(i,3) = mean(calibPoints(range,3));
 end
 
+
 % Display Fixed Points and 3D Mesh
 close all
 hold on
 trimesh(faces,verticesFinal(:,1),verticesFinal(:,2),verticesFinal(:,3))
-
 scatter3(fixedDataLocations(:,1),fixedDataLocations(:,2),fixedDataLocations(:,3),'filled','k');
 scatter3(calibPointsFinal(:,1),calibPointsFinal(:,2),calibPointsFinal(:,3),'filled','r');
 axis equal
 
-
+%% Load Test Path Points if available
+addpath(strcat(currentFolder,'\Meshes'));
+load('Head2Head.mat');
 %% Load Optical Data
 
 % Change to Optical Data Path
-% cd('C:\Users\BLI\Desktop\Downloads\LowResCalfplots')
-% cd('C:\Users\BLI\Desktop\Downloads\HighResCalfplots')
+addpath(strcat(currentFolder,'\OpticalData\HighSampled'));
 
-% cd('C:\Users\Public\BLI\Desktop\Downloads\HighResCalfplots')
-
-cd('C:\Users\Public\BLI\Desktop\Downloads\HighResCalfplots')
 % Load in measurement times
-% fid2=fopen('ptwarm_160628_calf2__TIME.asc');
 fid2=fopen('ptwarm_160629_calf1__TIME.asc');
-
 opticalTimes=textscan(fid2,'%s %s');
 fclose('all');
+
 % Sort measurements by time
 [a,b]=sort(opticalTimes{2}(2:end));
 
 % Load in optical chromophore measurements
-% fid = fopen('ptwarm_160628_calf2__SUM.asc');
 fid = fopen('ptwarm_160629_calf1__SUM.asc');
 
 opticalStringData = textscan(fid, '%s');
 fclose('all');
+
 % Scan each line looking for keywords
 for i=1:size(opticalStringData{1,1})
       ind1(i)=strcmp(opticalStringData{1,1}(i),'wavelength(nm)');
@@ -112,6 +109,7 @@ for i=1:size(opticalStringData{1,1})
 end
 startIndex = find(ind1==1)+1;
 endIndex = find(ind2==1,1);
+
 % Find number of points based on keywords
 numPoints = endIndex-startIndex;
 chromIndex = find(ind3==1);
@@ -132,7 +130,7 @@ for i = b(j)
 end
 end
 
-%%
+%% Find Mesh Locations for Interpolation
 interpRange = zeros(length(verticesFinal),1);
 for i = 1:length(fixedDataLocations)
     distance(:,1) = (verticesFinal(:,1)-fixedDataLocations(i,1)).^2;
@@ -145,10 +143,10 @@ end
 interpRange = logical(interpRange);
 scatter3(verticesFinal(interpRange,1),verticesFinal(interpRange,2),verticesFinal(interpRange,3))
 
+% Translate from face mapping to adjacency matrix
 [adjacencyMatrix] = triangulation2adjacency(faces,verticesFinal);
 
-%%
-% Test_Points_cursor_info = Test_cursor_info ;
+%% Find Closest Locations on Mesh to Selected Start / End Points
 differenceVertex1 = (verticesFinal(:,1) - Test_Points_cursor_info(1,1).Position(:,1));
 differenceVertex2 = (verticesFinal(:,2) - Test_Points_cursor_info(1,1).Position(:,2));
 differenceVertex3 = (verticesFinal(:,3) - Test_Points_cursor_info(1,1).Position(:,3));
@@ -160,14 +158,17 @@ differenceVertex3 = (verticesFinal(:,3) - Test_Points_cursor_info(1,2).Position(
 [~,endIndex] = min(abs(differenceVertex1)+abs(differenceVertex2)+abs(differenceVertex3));
 
 
-%%
+%% Calculate path using dijkstra's algorithm
 [costs,path1] = dijkstra(adjacencyMatrix,verticesFinal,startIndex,endIndex);
+
 %gplot(adjacencyMatrix,verticesFinal,'k.:'); hold on;
 %plot(verticesFinal(path1,1),verticesFinal(path,2),'ro-','LineWidth',2); hold off
 
 close all
-% Interpolate Data
+% Interpolate Data at all interpolated points
+
 chromophoreSelect = 3; % 1 Oxyhemo 2 Deoxyhemo 3 Water 4 Lipid
+
 for chromophoreSelect = 1:4
 V = chromMat(1:length(fixedDataLocations),chromophoreSelect);
 VF = scatteredInterpolant(fixedDataLocations(:,1),fixedDataLocations(:,2),fixedDataLocations(:,3),V,'linear');
